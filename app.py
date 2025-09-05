@@ -194,36 +194,6 @@ def student_dashboard():
     
     return render_template('student/dashboard.html')
 
-# Student Physics Prompts
-@app.route('/student-physics-prompts')
-@login_required
-def student_physics_prompts():
-    if session.get('role') != 'student':
-        flash('Access denied. Student authorization required.', 'error')
-        return redirect(url_for('index'))
-    
-    conn = None
-    try:
-        conn = get_db()
-        cursor = conn.cursor()
-        # Get prompts for the student's year
-        cursor.execute("""
-            SELECT p.*, 
-                   EXISTS (SELECT 1 FROM submissions WHERE prompt_id = p.id AND student_id = ?) as submitted
-            FROM prompts p
-            WHERE p.subject = 'physics' AND p.class_year = ?
-            ORDER BY p.created_at DESC
-        """, (session['user_id'], session['class']))  # Use the full class name, e.g., "Year 7"
-        prompts = cursor.fetchall()
-    except sqlite3.Error as e:
-        flash(f'Error retrieving prompts: {str(e)}', 'error')
-        prompts = []
-    finally:
-        if conn:
-            conn.close()
-    
-    return render_template('student/physics_prompts.html', prompts=prompts)
-
 # View Physics Prompt for Students
 @app.route('/student-physics-prompt/<int:prompt_id>')
 @login_required
