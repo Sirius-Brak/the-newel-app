@@ -1156,15 +1156,216 @@ def view_general_prompt_submissions(prompt_id):
     
     return render_template('teacher/general_prompt_submissions.html', prompt=prompt, submissions=submissions)
 
-# Check if we need to initialize the database on Railway
-if os.getenv('RAILWAY') and not os.path.exists(DATABASE_PATH):
-    with app.app_context():
-        from init_db import init_database
-        init_database()
-        print("Database initialized successfully on Railway!")
+# Unified DB init: Runs on Railway OR local if DB missing (no Railway env check needed)
+if not os.path.exists(DATABASE_PATH):
+    print("Initializing database... (Railway or local)")
+    instance_path = os.path.join(basedir, 'instance')
+    os.makedirs(instance_path, exist_ok=True)
+    
+    schema_sql = """
+    CREATE TABLE IF NOT EXISTS users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        full_name TEXT NOT NULL,
+        username TEXT UNIQUE NOT NULL,
+        password_hash TEXT NOT NULL,
+        role TEXT NOT NULL CHECK(role IN ('teacher', 'student')),
+        class_name TEXT,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE TABLE IF NOT EXISTS prompts (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        title TEXT NOT NULL,
+        description TEXT NOT NULL,
+        subject TEXT DEFAULT 'physics',
+        class_year TEXT NOT NULL,
+        created_by INTEGER NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (created_by) REFERENCES users (id)
+    );
+
+    CREATE TABLE IF NOT EXISTS submissions (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        prompt_id INTEGER NOT NULL,
+        student_id INTEGER NOT NULL,
+        response_text TEXT NOT NULL,
+        score INTEGER,
+        submitted_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (prompt_id) REFERENCES prompts (id),
+        FOREIGN KEY (student_id) REFERENCES users (id)
+    );
+    """
+    
+    conn = sqlite3.connect(DATABASE_PATH)
+    cursor = conn.cursor()
+    cursor.executescript(schema_sql)
+    conn.commit()
+    conn.close()
+    print("Database initialized successfully.")
+
+# Example Updated Routes (Key Changes: class -> class_name in queries/session; Unified class_year extraction)
+# ... (Your previous routes here, with these tweaks applied globally)
+
+# Student Physics Prompts (Updated for consistency)
+@app.route('/student-physics-prompts')
+@login_required
+def student_physics_prompts():
+    if session.get('role') != 'student':
+        flash('Access denied.', 'error')
+        return redirect(url_for('index'))
+    
+    conn = None
+    try:
+        conn = get_db()
+        cursor = conn.cursor()
+        class_year = session['class_name'].split()[-1]  # Unified: extract numeric year
+        cursor.execute("""
+            SELECT p.*, 
+                   EXISTS (SELECT 1 FROM submissions WHERE prompt_id = p.id AND student_id = ?) as submitted
+            FROM prompts p
+            WHERE p.subject = 'physics' AND p.class_year = ?
+            ORDER BY p.created_at DESC
+        """, (session['user_id'], class_year))  # Use class_year for prompts
+        prompts = cursor.fetchall()
+    except sqlite3.Error:
+        flash('Error retrieving prompts.', 'error')  # Sanitized error
+        prompts = []
+    finally:
+        if conn:
+            conn.close()
+    
+    return render_template('student/physics_prompts.html', prompts=prompts)
+
+# Submit Physics Response (Updated similarly)
+@app.route('/submit-physics-response/<int:prompt_id>', methods=['GET', 'POST'])
+@login_required
+def submit_physics_response(prompt_id):
+    if session.get('role') != 'student':
+        flash('Access denied.', 'error')
+        return redirect(url_for('index'))
+    
+    conn = None
+    try:
+        conn = get_db()
+        cursor = conn.cursor()
+        class_year = session['class_name'].split()[-1]  # Consistent extraction
+        cursor.execute("SELECT * FROM prompts WHERE id = ? AND class_year = ?", (prompt_id, class_year))
+        prompt = cursor.fetchone()
+        if not prompt:
+            flash('Prompt not found.', 'error')
+            return redirect(url_for('student_physics_prompts'))
+        
+        cursor.execute("SELECT * FROM submissions WHERE prompt_id = ? AND student_id = ?", (prompt_id, session['user_id']))
+        if cursor.fetchone():
+            flash('Already submitted.', 'error')
+            return redirect(url_for('view_student_physics_prompt', prompt_id=prompt_id))
+        
+        if request.method == 'POST':
+            response_text = request.form.get('response_text')
+            if not response_text:
+                flash('Response required.', 'error')
+                return render_template('student/submit_response.html', prompt=prompt)
+            
+            cursor.execute("""
+                INSERT INTO submissions (prompt_id, student_id, response_text, submitted_at)
+                VALUES (?, ?, ?, ?)
+            """, (prompt_id, session['user_id'], response_text, datetime.now()))
+            conn.commit()
+            flash('Submitted!', 'success')
+            return redirect(url_for('view_student_physics_prompt', prompt_id=prompt_id))
+    except sqlite3.Error:
+        flash('Submission error.', 'error')  # Sanitized
+        return redirect(url_for('student_physics_prompts'))
+    finally:
+        if conn:
+            conn.close()
+    
+    return render_template('student/submit_response.html', prompt=prompt)
+
+# Leaderboard (Updated for class_name)
+@app.route('/leaderboard')
+@login_required
+def leaderboard():
+    class_filter = request.args.get('class')
+    
+    conn = None
+    try:
+        conn = get_db()
+        cursor = conn.cursor()
+        query = """
+            SELECT 
+                u.id, u.full_name, u.class_name as class,  # Renamed for DB column
+                COUNT(s.id) as submissions_count,
+                AVG(s.score) as average_score
+            FROM users u
+            LEFT JOIN submissions s ON u.id = s.student_id
+            WHERE u.role = 'student'
+        """
+        params = []
+        if class_filter:
+            query += " AND u.class_name = ?"
+            params.append(class_filter)
+        
+        query += """
+            GROUP BY u.id
+            HAVING submissions_count > 0
+            ORDER BY average_score DESC
+        """
+        cursor.execute(query, params)
+        leaderboard_data = cursor.fetchall()
+        
+        cursor.execute("SELECT DISTINCT class_name FROM users WHERE class_name IS NOT NULL AND role = 'student' ORDER BY class_name")
+        distinct_classes = [row['class_name'] for row in cursor.fetchall()]
+    except sqlite3.Error:
+        flash('Leaderboard error.', 'error')
+        leaderboard_data = []
+        distinct_classes = []
+    finally:
+        if conn:
+            conn.close()
+    
+    return render_template('leaderboard.html', leaderboard_data=leaderboard_data, distinct_classes=distinct_classes, current_class=class_filter, user_role=session.get('role'))
+
+# Login (Updated session key)
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+        
+        if not all([username, password]):
+            flash('User/pass required.', 'error')
+            return render_template('auth/login.html')
+        
+        conn = None
+        try:
+            conn = get_db()
+            cursor = conn.cursor()
+            cursor.execute("SELECT * FROM users WHERE username = ?", (username,))
+            user = cursor.fetchone()
+            
+            if user and check_password_hash(user['password_hash'], password):
+                session['user_id'] = user['id']
+                session['username'] = user['username']
+                session['full_name'] = user['full_name']
+                session['role'] = user['role']
+                session['class_name'] = user['class_name']  # Updated session key
+                flash('Logged in!', 'success')
+                return redirect(url_for('teacher_dashboard' if user['role'] == 'teacher' else 'student_dashboard'))
+            else:
+                flash('Invalid credentials.', 'error')
+        except sqlite3.Error:
+            flash('Login error.', 'error')
+        finally:
+            if conn:
+                conn.close()
+    
+    return render_template('auth/login.html')
+
+# ... (Repeat for all other routes: replace 'class' with 'class_name' in queries, session refs, and template contexts)
 
 if __name__ == '__main__':
     print("Starting The Newel app server...")
     print(f"Database path: {DATABASE_PATH}")
-    print(f"Templates path: {TEMPLATES_PATH}")
-    app.run(debug=True)
+    print("_dir__ templates")
+    app.run(debug=True) (debug=True)
