@@ -1156,12 +1156,12 @@ def view_general_prompt_submissions(prompt_id):
     
     return render_template('teacher/general_prompt_submissions.html', prompt=prompt, submissions=submissions)
 
-# Initialize database if INIT_DB environment variable is set
-if os.getenv('INIT_DB') == '1':
+# Check if we need to initialize the database on Railway
+if os.getenv('RAILWAY') and not os.path.exists(DATABASE_PATH):
     with app.app_context():
         from init_db import init_database
         init_database()
-        print("Database initialized successfully!")
+        print("Database initialized successfully on Railway!")
 
 if __name__ == '__main__':
     print("Starting The Newel app server...")
