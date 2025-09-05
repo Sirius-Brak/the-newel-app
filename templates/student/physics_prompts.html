@@ -144,57 +144,5 @@
 </head>
 <body>
     <div class="header">
-        <a href="{{ url_for('index') }}" style="text-decoration: none;"><div class="logo">The Newel</div></a>
-        <div class="nav-links">
-            <a href="{{ url_for('student_dashboard') }}">Dashboard</a>
-            <a href="{{ url_for('logout') }}">Logout</a>
-        </div>
-    </div>
-
-    <div class="flash-messages">
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <div class="flash-message {{ category }}">{{ message }}</div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
-    </div>
-
-    <div class="container">
-        <div class="page-header">
-            <h1 class="page-title">Physics Prompts for {{ session.class }}</h1>
-        </div>
-
-        {% if prompts %}
-        <div class="prompts-grid">
-            {% for prompt in prompts %}
-            <div class="prompt-card">
-                <h3 class="prompt-title">{{ prompt.title }}</h3>
-                <p class="prompt-description">{{ prompt.description[:150] }}{% if prompt.description|length > 150 %}...{% endif %}</p>
-                
-                <div class="prompt-meta">
-                    <span>Assigned on {{ prompt.created_at[:10] }}</span>
-                </div>
-                
-                <div class="prompt-actions">
-                    <a href="{{ url_for('view_student_physics_prompt', prompt_id=prompt.id) }}" class="btn btn-view">View Prompt</a>
-                    {% if prompt.submitted %}
-                        <span class="btn btn-submitted">Submitted</span>
-                    {% else %}
-                        <a href="{{ url_for('submit_physics_response', prompt_id=prompt.id) }}" class="btn btn-submit">Submit Response</a>
-                    {% endif %}
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-        {% else %}
-        <div class="empty-state">
-            <div class="empty-state-icon">⚛️</div>
-            <h2>No Physics Prompts Assigned</h2>
-            <p>There are no physics prompts assigned to your class yet.</p>
-        </div>
-        {% endif %}
-    </div>
-</body>
-</html>
+        <a href="{{ url_for('index') }}" style="text-decoration: none;"><div class="logo">The Newel</
+\<Streaming stoppped because the conversation grew too long for this model\>
