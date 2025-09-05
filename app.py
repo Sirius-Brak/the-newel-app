@@ -1139,12 +1139,12 @@ def view_general_prompt_submissions(prompt_id):
         
         # Get all submissions for this prompt
         cursor.execute("""
-            SELECT s.*, u.full_name, u.class
-            FROM submissions s
-            JOIN users u ON s.student_id = u.id
-            WHERE s.prompt_id = ?
-            ORDER BY s.submitted_at DESC
-        """, (prompt_id,))
+    SELECT s.*, u.full_name, u.class_name  # ← FIXED: class -> class_name
+    FROM submissions s
+    JOIN users u ON s.student_id = u.id
+    WHERE s.prompt_id = ?
+    ORDER BY s.submitted_at DESC
+""", (prompt_id,))
         submissions = cursor.fetchall()
         
     except sqlite3.Error as e:
