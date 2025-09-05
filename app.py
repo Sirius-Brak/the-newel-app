@@ -224,56 +224,6 @@ def view_student_physics_prompt(prompt_id):
     
     return render_template('student/view_physics_prompt.html', prompt=prompt)
 
-# Submit Physics Response
-@app.route('/submit-physics-response/<int:prompt_id>', methods=['GET', 'POST'])
-@login_required
-def submit_physics_response(prompt_id):
-    if session.get('role') != 'student':
-        flash('Access denied. Student authorization required.', 'error')
-        return redirect(url_for('index'))
-    
-    conn = None
-    try:
-        conn = get_db()
-        cursor = conn.cursor()
-        
-        # Check if prompt exists and is for the student's year
-        cursor.execute("SELECT * FROM prompts WHERE id = ? AND class_year = ?", (prompt_id, session['class']))
-        prompt = cursor.fetchone()
-        if not prompt:
-            flash('Prompt not found or access denied.', 'error')
-            return redirect(url_for('student_physics_prompts'))
-        
-        # Check if already submitted
-        cursor.execute("SELECT * FROM submissions WHERE prompt_id = ? AND student_id = ?", (prompt_id, session['user_id']))
-        submission = cursor.fetchone()
-        if submission:
-            flash('You have already submitted a response for this prompt.', 'error')
-            return redirect(url_for('view_student_physics_prompt', prompt_id=prompt_id))
-        
-        if request.method == 'POST':
-            response_text = request.form.get('response_text')
-            if not response_text:
-                flash('Response text is required.', 'error')
-                return render_template('student/submit_response.html', prompt=prompt)
-            
-            # Insert submission
-            cursor.execute("""
-                INSERT INTO submissions (prompt_id, student_id, response_text, submitted_at)
-                VALUES (?, ?, ?, ?)
-            """, (prompt_id, session['user_id'], response_text, datetime.now()))
-            conn.commit()
-            flash('Response submitted successfully!', 'success')
-            return redirect(url_for('view_student_physics_prompt', prompt_id=prompt_id))
-        
-    except sqlite3.Error as e:
-        flash(f'An error occurred: {str(e)}', 'error')
-        return redirect(url_for('student_physics_prompts'))
-    finally:
-        if conn:
-            conn.close()
-    
-    return render_template('student/submit_response.html', prompt=prompt)
 
 # Physics Prompts Dashboard
 @app.route('/physics-prompts')
