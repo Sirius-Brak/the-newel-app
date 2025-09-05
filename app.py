@@ -1156,6 +1156,13 @@ def view_general_prompt_submissions(prompt_id):
     
     return render_template('teacher/general_prompt_submissions.html', prompt=prompt, submissions=submissions)
 
+# Initialize database if INIT_DB environment variable is set
+if os.getenv('INIT_DB') == '1':
+    with app.app_context():
+        from init_db import init_database
+        init_database()
+        print("Database initialized successfully!")
+
 if __name__ == '__main__':
     print("Starting The Newel app server...")
     print(f"Database path: {DATABASE_PATH}")
