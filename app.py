@@ -126,53 +126,6 @@ def register():
     return render_template('auth/register.html', role=role)
 
 # Login for both Teachers and Students
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    if request.method == 'POST':
-        username = request.form.get('username')
-        password = request.form.get('password')
-
-        # Validation
-        if not all([username, password]):
-            flash('Please enter both username and password.', 'error')
-            return render_template('auth/login.html')
-
-        # Check user credentials
-        conn = None
-        try:
-            conn = get_db()
-            cursor = conn.cursor()
-            
-            # Find user by username
-            cursor.execute("SELECT * FROM users WHERE username = ?", (username,))
-            user = cursor.fetchone()
-            
-            if user and check_password_hash(user['password_hash'], password):
-                # Successful login - set session
-                session['user_id'] = user['id']
-                session['username'] = user['username']
-                session['full_name'] = user['full_name']
-                session['role'] = user['role']
-                session['class'] = user['class']  # Store class in session
-                
-                flash('Login successful!', 'success')
-                if user['role'] == 'teacher':
-                    return redirect(url_for('teacher_dashboard'))
-                else:
-                    return redirect(url_for('student_dashboard'))
-            else:
-                flash('Invalid username or password.', 'error')
-                return render_template('auth/login.html')
-            
-        except sqlite3.Error as e:
-            flash(f'An error occurred: {str(e)}', 'error')
-            return render_template('auth/login.html')
-        finally:
-            if conn:
-                conn.close()
-
-    # GET request - show the form
-    return render_template('auth/login.html')
 
 # Teacher Dashboard
 @app.route('/teacher-dashboard')
@@ -533,63 +486,6 @@ def grade_submission(submission_id):
     return redirect(url_for('view_prompt_submissions', prompt_id=submission['prompt_id']))
 
 # Leaderboard - Shows student rankings based on average scores
-@app.route('/leaderboard')
-@login_required
-def leaderboard():
-    # Get optional class filter from query parameters
-    class_filter = request.args.get('class', '')
-    
-    conn = None
-    try:
-        conn = get_db()
-        cursor = conn.cursor()
-        
-        # Base query with optional class filter
-        query = """
-            SELECT 
-                u.id, 
-                u.full_name, 
-                u.class,
-                COUNT(s.id) as submissions_count,
-                AVG(s.score) as average_score
-            FROM users u
-            LEFT JOIN submissions s ON u.id = s.student_id
-            WHERE u.role = 'student'
-        """
-        
-        params = []
-        if class_filter:
-            query += " AND u.class = ?"
-            params.append(class_filter)
-        
-        query += """
-            GROUP BY u.id
-            HAVING submissions_count > 0
-            ORDER BY average_score DESC
-        """
-        
-        cursor.execute(query, params)
-        leaderboard_data = cursor.fetchall()
-        
-        # Get distinct classes for the filter dropdown (for teachers)
-        distinct_classes = []
-        if session.get('role') == 'teacher':
-            cursor.execute("SELECT DISTINCT class FROM users WHERE class IS NOT NULL AND role = 'student' ORDER BY class")
-            distinct_classes = [row['class'] for row in cursor.fetchall()]
-        
-    except sqlite3.Error as e:
-        flash(f'Error retrieving leaderboard: {str(e)}', 'error')
-        leaderboard_data = []
-        distinct_classes = []
-    finally:
-        if conn:
-            conn.close()
-    
-    return render_template('leaderboard.html', 
-                         leaderboard_data=leaderboard_data,
-                         distinct_classes=distinct_classes,
-                         current_class=class_filter,
-                         user_role=session.get('role'))
 
 # Logout
 @app.route('/logout')
