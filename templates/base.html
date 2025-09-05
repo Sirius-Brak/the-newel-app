@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}The Newel - Where Science Meets Excellence{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <header class="header">
+        <div class="container header-content">
+            <a href="{{ url_for('index') }}" style="text-decoration: none;">
+                <div class="logo">The Newel</div>
+            </a>
+            <nav class="nav-links">
+                {% if session.get('user_id') %}
+                    {% if session.get('role') == 'teacher' %}
+                        <a href="{{ url_for('teacher_dashboard') }}"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+                        <a href="{{ url_for('physics_prompts') }}"><i class="fas fa-atom"></i> Physics</a>
+                        <a href="{{ url_for('general_prompts') }}"><i class="fas fa-globe"></i> General</a>
+                    {% else %}
+                        <a href="{{ url_for('student_dashboard') }}"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+                        <a href="{{ url_for('student_physics_prompts') }}"><i class="fas fa-atom"></i> Physics</a>
+                        <a href="{{ url_for('student_general_prompts') }}"><i class="fas fa-globe"></i> General</a>
+                    {% endif %}
+                    <a href="{{ url_for('leaderboard') }}"><i class="fas fa-trophy"></i> Leaderboard</a>
+                    <a href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                {% else %}
+                    <a href="{{ url_for('index') }}"><i class="fas fa-home"></i> Home</a>
+                    <a href="{{ url_for('login') }}"><i class="fas fa-sign-in-alt"></i> Login</a>
+                    <a href="{{ url_for('register') }}"><i class="fas fa-user-plus"></i> Register</a>
+                {% endif %}
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash-message flash-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>The Newel</h3>
+                    <p>Where Science Meets Excellence - A competitive learning platform designed to inspire the next generation of scientists.</p>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>Quick Links</h3>
+                    <ul class="footer-links">
+                        <li><a href="{{ url_for('index') }}"><i class="fas fa-home"></i> Home</a></li>
+                        <li><a href="#"><i class="fas fa-book"></i> Subjects</a></li>
+                        <li><a href="{{ url_for('leaderboard') }}"><i class="fas fa-trophy"></i> Leaderboard</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>Learning Resources</h3>
+                    <ul class="footer-links">
+                        <li><a href="#"><i class="fas fa-book-open"></i> Study Guides</a></li>
+                        <li><a href="#"><i class="fas fa-video"></i> Video Lessons</a></li>
+                        <li><a href="#"><i class="fas fa-flask"></i> Lab Simulations</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="copyright text-center">
+                <p>&copy; 2023 The Newel. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+   <title>Login - The Newel</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #0a0a1a;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 2rem;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            width: 300px;
+        }
+        h1 {
+            text-align: center;
+            color: #4CAF50;
+            margin-bottom: 1.5rem;
+        }
+        label {
+            display: block;
+            margin-top: 1rem;
+            color: #FFD700;
+        }
+        input {
+            width: 100%;
+            padding: 0.5rem;
+            margin-top: 0.3rem;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+        button {
+            margin-top: 1.5rem;
+            width: 100%;
+            padding: 0.7rem;
+            border: none;
+            border-radius: 5px;
+            background: #4CAF50;
+            color: white;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #3e8e41;
+        }
+        .flash-messages {
+            margin-bottom: 1rem;
+        }
+        .flash-message {
+            padding: 0.5rem;
+            border-radius: 5px;
+            margin-bottom: 0.5rem;
+        }
+        .error {
+            background-color: #ff4444;
+            color: white;
+        }
+        .success {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 1rem;
+            color: #FFD700;
+        }
+        .auth-links {
+            margin-top: 1.5rem;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            text-align: center;
+        }
+        .auth-links a {
+            color: #4CAF50;
+            text-decoration: none;
+        }
+        .auth-links a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Login to The Newel</h1>
+
+        <div class="flash-messages">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="flash-message {{ category }}">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+        </div>
+
+        <form method="POST" action="{{ url_for('login') }}">
+            <label for="username">Username:</label>
+            <input type="text" id="username" name="username" required>
+            
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" required>
+            
+            <button type="submit">Login</button>
+        </form>
+
+        <div class="auth-links">
+            <p>New teacher? <a href="{{ url_for('register') }}">Register here</a></p>
+        </div>
+
+        <a href="{{ url_for('index') }}" class="back-link">Back to Home</a>
+    </div>
+</body>
+</html>

@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>General Prompts - The Newel</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #0a0a1a;
+            color: white;
+            min-height: 100vh;
+        }
+        .header {
+            background: rgba(10, 10, 26, 0.9);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #FF6B35;
+        }
+        .logo {
+            font-family: 'Brush Script MT', cursive;
+            font-size: 2.5rem;
+            color: #FF6B35;
+        }
+        .nav-links {
+            display: flex;
+            gap: 1.5rem;
+        }
+        .nav-links a {
+            color: #FF6B35;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border: 1px solid #FF6B35;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+        .nav-links a:hover {
+            background: #FF6B35;
+            color: #0a0a1a;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+        .page-header {
+            margin-bottom: 2rem;
+        }
+        .page-title {
+            color: #FF6B35;
+            font-size: 2.5rem;
+        }
+        .prompts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 1.5rem;
+        }
+        .prompt-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 1.5rem;
+            border-left: 4px solid #FF6B35;
+            transition: transform 0.3s ease;
+            cursor: pointer;
+        }
+        .prompt-card:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.15);
+        }
+        .prompt-title {
+            color: #FF6B35;
+            font-size: 1.5rem;
+            margin-top: 0;
+            margin-bottom: 0.5rem;
+        }
+        .prompt-description {
+            color: #ccc;
+            line-height: 1.6;
+            margin-bottom: 1rem;
+        }
+        .prompt-meta {
+            color: #888;
+            font-size: 0.9rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 1rem;
+            margin-top: 1rem;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #888;
+        }
+        .empty-state-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <a href="{{ url_for('index') }}" style="text-decoration: none;">
+            <div class="logo">The Newel</div>
+        </a>
+        <div class="nav-links">
+            <a href="{{ url_for('student_dashboard') }}">Dashboard</a>
+            <a href="{{ url_for('logout') }}">Logout</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="page-header">
+            <h1 class="page-title">General Challenge Prompts</h1>
+            <p>Open to all year groups - showcase your skills!</p>
+        </div>
+
+        {% if prompts %}
+        <div class="prompts-grid">
+            {% for prompt in prompts %}
+            <div class="prompt-card" onclick="window.location.href='/student-general-prompt/{{ prompt.id }}'">
+                <h3 class="prompt-title">{{ prompt.title }}</h3>
+                <p class="prompt-description">{{ prompt.description[:150] }}{% if prompt.description|length > 150 %}...{% endif %}</p>
+                
+                <div class="prompt-meta">
+                    <span>Open to All Students • {{ prompt.created_at[:10] }}</span>
+                    {% if prompt.submitted %}
+                        <span style="color: #4CAF50;">✓ Submitted</span>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-state-icon">🌐</div>
+            <h2>No General Challenges Yet</h2>
+            <p>Check back later for exciting cross-disciplinary challenges!</p>
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>

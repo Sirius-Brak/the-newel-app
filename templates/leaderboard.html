@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Leaderboard - The Newel</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #0a0a1a;
+            color: white;
+            min-height: 100vh;
+        }
+        .header {
+            background: rgba(10, 10, 26, 0.9);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #FFD700;
+        }
+        .logo {
+            font-family: 'Brush Script MT', cursive;
+            font-size: 2.5rem;
+            color: #4CAF50;
+        }
+        .nav-links {
+            display: flex;
+            gap: 1.5rem;
+        }
+        .nav-links a {
+            color: #FFD700;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border: 1px solid #FFD700;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+        .nav-links a:hover {
+            background: #FFD700;
+            color: #0a0a1a;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+        .page-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .page-title {
+            color: #4CAF50;
+            font-size: 2.5rem;
+        }
+        .class-filter {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .class-filter select, .class-filter button {
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid #FFD700;
+        }
+        .class-filter button {
+            background: #4CAF50;
+            cursor: pointer;
+        }
+        .class-filter button:hover {
+            background: #3e8e41;
+        }
+        .leaderboard-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .leaderboard-table th,
+        .leaderboard-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .leaderboard-table th {
+            background: rgba(255, 215, 0, 0.2);
+            color: #FFD700;
+            font-weight: bold;
+        }
+        .leaderboard-table tr:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        .rank {
+            font-weight: bold;
+            color: #FFD700;
+            text-align: center;
+        }
+        .average-score {
+            font-weight: bold;
+            color: #4CAF50;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <a href="{{ url_for('index') }}" style="text-decoration: none;"><a href="{{ url_for('index') }}" style="text-decoration: none;"><div class="logo">The Newel</div></a></a>
+        <div class="nav-links">
+            {% if user_role == 'teacher' %}
+                <a href="{{ url_for('teacher_dashboard') }}">Dashboard</a>
+            {% else %}
+                <a href="{{ url_for('student_dashboard') }}">Dashboard</a>
+            {% endif %}
+            <a href="{{ url_for('logout') }}">Logout</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="page-header">
+            <h1 class="page-title">Student Leaderboard</h1>
+            <p>Ranking based on average scores{% if current_class %} for {{ current_class }}{% endif %}</p>
+        </div>
+
+        {% if user_role == 'teacher' and distinct_classes %}
+        <div class="class-filter">
+            <form method="GET" action="{{ url_for('leaderboard') }}">
+                <select name="class">
+                    <option value="">All Classes</option>
+                    {% for class in distinct_classes %}
+                        <option value="{{ class }}" {% if current_class == class %}selected{% endif %}>{{ class }}</option>
+                    {% endfor %}
+                </select>
+                <button type="submit">Filter</button>
+            </form>
+        </div>
+        {% endif %}
+
+        {% if leaderboard_data %}
+        <table class="leaderboard-table">
+            <thead>
+                <tr>
+                    <th>Rank</th>
+                    <th>Student Name</th>
+                    <th>Class</th>
+                    <th>Submissions</th>
+                    <th>Average Score</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for student in leaderboard_data %}
+                <tr>
+                    <td class="rank">{{ loop.index }}</td>
+                    <td>{{ student.full_name }}</td>
+                    <td>{{ student.class }}</td>
+                    <td>{{ student.submissions_count }}</td>
+                    <td class="average-score">
+                        {% if student.average_score %}
+                            {{ "%.1f"|format(student.average_score) }}/100
+                        {% else %}
+                            N/A
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="empty-state">
+            <h2>No Data Available</h2>
+            <p>No students have been graded yet{% if current_class %} in {{ current_class }}{% endif %}.</p>
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>

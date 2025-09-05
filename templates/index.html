@@ -1,0 +1,233 @@
+{% extends "base.html" %}
+
+{% block title %}The Newel - Where Science Meets Excellence{% endblock %}
+
+{% block extra_css %}
+<style>
+    .hero {
+        text-align: center;
+        padding: 4rem 0 3rem;
+        background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%"><circle cx="10%" cy="20%" r="2" fill="white" opacity="0.7"/><circle cx="20%" cy="70%" r="1" fill="white" opacity="0.5"/><circle cx="80%" cy="30%" r="3" fill="white" opacity="0.9"/><circle cx="90%" cy="80%" r="1" fill="white" opacity="0.6"/><circle cx="40%" cy="40%" r="2" fill="white" opacity="0.8"/></svg>');
+    }
+    
+    .hero h1 {
+        font-size: 3.5rem;
+        margin-bottom: 1rem;
+        color: #4CAF50; /* Fallback color */
+        text-shadow: 0 2px 10px rgba(76, 175, 80, 0.3);
+    }
+
+    /* Gradient text for modern browsers */
+    @supports (background-clip: text) or (-webkit-background-clip: text) {
+        .hero h1 {
+            background: linear-gradient(45deg, var(--accent-green), var(--accent-gold));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            color: transparent; /* Redundant fallback for edge cases */
+        }
+    }
+    
+    .hero p {
+        font-size: 1.5rem;
+        max-width: 800px;
+        margin: 0 auto 2rem;
+        color: var(--text-muted);
+    }
+    
+    .cta-buttons {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        margin-top: 2rem;
+    }
+    
+    /* Science Fact Section */
+    .science-fact {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: var(--radius-lg);
+        padding: var(--spacing-lg);
+        margin: var(--spacing-xl) auto;
+        max-width: 900px;
+        border-left: 5px solid var(--accent-gold);
+        box-shadow: var(--shadow-medium);
+    }
+    
+    .science-fact h2 {
+        color: var(--accent-gold);
+        margin-bottom: var(--spacing-sm);
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-xs);
+    }
+    
+    .fact-content {
+        font-size: 1.2rem;
+        line-height: 1.8;
+        background: rgba(0, 0, 0, 0.2);
+        padding: var(--spacing-md);
+        border-radius: var(--radius-md);
+        position: relative;
+        min-height: 100px;
+    }
+    
+    .refresh-fact {
+        margin-top: var(--spacing-md);
+        text-align: center;
+    }
+    
+    /* Features Section */
+    .features {
+        padding: var(--spacing-xl) 0;
+    }
+    
+    .section-title {
+        text-align: center;
+        margin-bottom: var(--spacing-xl);
+        font-size: 2.5rem;
+        color: var(--accent-gold);
+    }
+    
+    .features-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: var(--spacing-lg);
+    }
+    
+    .feature-card {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: var(--radius-lg);
+        padding: var(--spacing-lg);
+        text-align: center;
+        transition: transform 0.3s ease;
+        border-top: 3px solid transparent;
+    }
+    
+    .feature-card:hover {
+        transform: translateY(-10px);
+        background: rgba(255, 255, 255, 0.08);
+    }
+    
+    .feature-card.teachers { border-top-color: var(--accent-green); }
+    .feature-card.students { border-top-color: var(--accent-blue); }
+    .feature-card.subjects { border-top-color: var(--accent-orange); }
+    
+    .feature-icon {
+        font-size: 3rem;
+        margin-bottom: var(--spacing-sm);
+    }
+    
+    .teachers .feature-icon { color: var(--accent-green); }
+    .students .feature-icon { color: var(--accent-blue); }
+    .subjects .feature-icon { color: var(--accent-orange); }
+    
+    /* Status Section */
+    .status-section {
+        background: rgba(255, 255, 255, 0.05);
+        padding: var(--spacing-xl) 0;
+        text-align: center;
+    }
+    
+    .status-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: var(--spacing-md);
+        margin-top: var(--spacing-lg);
+    }
+    
+    .status-card {
+        background: rgba(0, 0, 0, 0.2);
+        padding: var(--spacing-md);
+        border-radius: var(--radius-md);
+        border-bottom: 3px solid var(--accent-green);
+    }
+    
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .hero h1 { font-size: 2.5rem; }
+        .hero p { font-size: 1.2rem; }
+        .cta-buttons { flex-direction: column; align-items: center; }
+        .features-grid, .status-grid { grid-template-columns: 1fr; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero">
+    <h1 class="fade-in">Where Science Meets Excellence</h1>
+    <p class="fade-in">Compete, Learn, and Excel in your scientific journey with interactive challenges and real-time leaderboards</p>
+    
+    <div class="cta-buttons fade-in">
+        <a href="{{ url_for('login') }}" class="btn btn-primary"><i class="fas fa-sign-in-alt"></i> Login to Your Account</a>
+        <a href="{{ url_for('register') }}" class="btn btn-secondary"><i class="fas fa-user-plus"></i> Register Now</a>
+    </div>
+</section>
+
+<!-- Science Fact Section -->
+<div class="science-fact card">
+    <h2><i class="fas fa-lightbulb"></i> Did You Know?</h2>
+    <div class="fact-content">
+        {{ random_fact }}
+    </div>
+    <div class="refresh-fact">
+        <button class="btn btn-secondary" onclick="window.location.reload()">
+            <i class="fas fa-sync-alt"></i> Show Another Fact
+        </button>
+    </div>
+</div>
+
+<!-- Features Section -->
+<section class="features">
+    <h2 class="section-title">Why Choose The Newel?</h2>
+    <div class="features-grid">
+        <div class="feature-card teachers">
+            <div class="feature-icon"><i class="fas fa-chalkboard-teacher"></i></div>
+            <h3>For Teachers</h3>
+            <p>Create engaging prompts, track student progress, and provide meaningful feedback with our intuitive dashboard.</p>
+        </div>
+        
+        <div class="feature-card students">
+            <div class="feature-icon"><i class="fas fa-user-graduate"></i></div>
+            <h3>For Students</h3>
+            <p>Respond to challenges, receive instant feedback, and climb the leaderboard in our competitive learning environment.</p>
+        </div>
+        
+        <div class="feature-card subjects">
+            <div class="feature-icon"><i class="fas fa-atom"></i></div>
+            <h3>Multiple Subjects</h3>
+            <p>Explore Physics, Biology, and General Science through interactive lessons designed for Years 7-11.</p>
+        </div>
+    </div>
+</section>
+
+<!-- Status Section -->
+<section class="status-section">
+    <h2 class="section-title">System Status</h2>
+    <div class="status-grid">
+        <div class="status-card">
+            <i class="fas fa-server"></i>
+            <h3>Server Status</h3>
+            <p>Running smoothly</p>
+        </div>
+        
+        <div class="status-card">
+            <i class="fas fa-database"></i>
+            <h3>Database</h3>
+            <p>Connected successfully</p>
+        </div>
+        
+        <div class="status-card">
+            <i class="fas fa-users"></i>
+            <h3>Active Users</h3>
+            <p>250+ students learning</p>
+        </div>
+        
+        <div class="status-card">
+            <i class="fas fa-tasks"></i>
+            <h3>Assignments</h3>
+            <p>120+ completed today</p>
+        </div>
+    </div>
+</section>
+{% endblock %}

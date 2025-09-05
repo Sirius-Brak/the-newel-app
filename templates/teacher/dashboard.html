@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Teacher Dashboard - The Newel</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.9)), 
+                        url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%"><circle cx="20%" cy="30%" r="2" fill="white" opacity="0.8"/><circle cx="50%" cy="20%" r="1" fill="white" opacity="0.6"/><circle cx="80%" cy="40%" r="3" fill="white" opacity="0.9"/><circle cx="30%" cy="70%" r="1" fill="white" opacity="0.5"/><circle cx="70%" cy="80%" r="2" fill="white" opacity="0.7"/></svg>'),
+                        #0a0a1a;
+            color: white;
+            min-height: 100vh;
+        }
+        .header {
+            background: rgba(10, 10, 26, 0.9);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #FFD700;
+        }
+        .logo {
+            font-family: 'Brush Script MT', cursive;
+            font-size: 2.5rem;
+            color: #4CAF50;
+            text-shadow: 0 0 10px rgba(76, 175, 80, 0.5);
+        }
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .welcome {
+            color: #FFD700;
+        }
+        .logout-btn {
+            background: #ff4444;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .logout-btn:hover {
+            background: #cc0000;
+        }
+        .dashboard-container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+        .dashboard-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .dashboard-title {
+            color: #4CAF50;
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+        .dashboard-subtitle {
+            color: #FFD700;
+            font-size: 1.2rem;
+        }
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+        .feature-card {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 2rem;
+            border-radius: 10px;
+            border-left: 4px solid #FFD700;
+            transition: transform 0.3s ease;
+            text-align: center;
+        }
+        .feature-card:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.15);
+        }
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: #4CAF50;
+        }
+        .feature-title {
+            color: #FFD700;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        .feature-description {
+            color: #ffffff;
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+        }
+        .feature-link {
+            display: inline-block;
+            background: #4CAF50;
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border-radius: 25px;
+            text-decoration: none;
+            transition: background 0.3s ease;
+        }
+        .feature-link:hover {
+            background: #3e8e41;
+        }
+        .coming-soon {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+        .coming-soon:hover {
+            background: #5a6268;
+        }
+        .flash-messages {
+            max-width: 600px;
+            margin: 1rem auto;
+        }
+        .flash-message {
+            padding: 1rem;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+        .error {
+            background-color: #ff4444;
+            color: white;
+        }
+        .success {
+            background-color: #4CAF50;
+            color: white;
+        }
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <a href="{{ url_for('index') }}" style="text-decoration: none;"><div class="logo">The Newel</div></a>
+        <div class="user-info">
+            <span class="welcome">Welcome, {{ session.full_name }}!</span>
+            <a href="{{ url_for('logout') }}" class="logout-btn">Logout</a>
+        </div>
+    </div>
+
+    <div class="flash-messages">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash-message {{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <div class="dashboard-container">
+        <div class="dashboard-header">
+            <h1 class="dashboard-title">Teacher Dashboard</h1>
+            <p class="dashboard-subtitle">Manage your classes and inspire young minds</p>
+        </div>
+
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">⚛️</div>
+                <h2 class="feature-title">Physics Prompts</h2>
+                <p class="feature-description">Create and manage physics assignments for your students. Track submissions and provide feedback.</p>
+                <a href="{{ url_for('physics_prompts') }}" class="feature-link">Manage Prompts</a>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">🧬</div>
+                <h2 class="feature-title">Biology Prompts</h2>
+                <p class="feature-description">Develop engaging biology lessons and activities. Monitor student progress and understanding.</p>
+                <a href="{{ url_for('biology_prompts') }}" class="feature-link">Manage Prompts</a>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">🌐</div>
+                <h2 class="feature-title">General Prompts</h2>
+                <p class="feature-description">Create cross-disciplinary assignments that encourage critical thinking and creativity.</p>
+                <a href="{{ url_for('general_prompts') }}" class="feature-link">Manage Prompts</a>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">🏆</div>
+                <h2 class="feature-title">Leaderboard</h2>
+                <p class="feature-description">View student rankings based on performance. Encourage healthy competition and motivation.</p>
+                <a href="{{ url_for('leaderboard') }}" class="feature-link">View Leaderboard</a>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">📊</div>
+                <h2 class="feature-title">History & Analytics</h2>
+                <p class="feature-description">Access complete history of student submissions and performance analytics over time.</p>
+                <a href="{{ url_for('history') }}" class="feature-link">View History</a>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">👥</div>
+                <h2 class="feature-title">Class Management</h2>
+                <p class="feature-description">Organize students into classes, manage enrollments, and track overall class performance.</p>
+                <a href="{{ url_for('class_management') }}" class="feature-link">Manage Classes</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

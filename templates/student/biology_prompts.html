@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Biology Prompts - The Newel</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #0a0a1a;
+            color: white;
+            min-height: 100vh;
+        }
+        .header {
+            background: rgba(10, 10, 26, 0.9);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #4CAF50;
+        }
+        .logo {
+            font-family: 'Brush Script MT', cursive;
+            font-size: 2.5rem;
+            color: #4CAF50;
+        }
+        .nav-links {
+            display: flex;
+            gap: 1.5rem;
+        }
+        .nav-links a {
+            color: #4CAF50;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border: 1px solid #4CAF50;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+        .nav-links a:hover {
+            background: #4CAF50;
+            color: #0a0a1a;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+        .page-title {
+            color: #4CAF50;
+            font-size: 2.5rem;
+        }
+        .prompts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 1.5rem;
+        }
+        .prompt-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 1.5rem;
+            border-left: 4px solid #4CAF50;
+            transition: transform 0.3s ease;
+        }
+        .prompt-card:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.15);
+        }
+        .prompt-title {
+            color: #4CAF50;
+            font-size: 1.5rem;
+            margin-top: 0;
+            margin-bottom: 0.5rem;
+        }
+        .prompt-description {
+            color: #ccc;
+            line-height: 1.6;
+            margin-bottom: 1rem;
+        }
+        .prompt-meta {
+            display: flex;
+            justify-content: space-between;
+            color: #888;
+            font-size: 0.9rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 1rem;
+            margin-top: 1rem;
+        }
+        .prompt-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+        .btn {
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            text-decoration: none;
+            font-size: 0.9rem;
+            color: white;
+        }
+        .btn-view {
+            background: #2196F3;
+        }
+        .btn-submit {
+            background: #4CAF50;
+        }
+        .btn-submitted {
+            background: #6c757d;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #888;
+        }
+        .empty-state-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        .flash-messages {
+            max-width: 800px;
+            margin: 1rem auto;
+        }
+        .flash-message {
+            padding: 1rem;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+        .error {
+            background-color: #ff4444;
+            color: white;
+        }
+        .success {
+            background-color: #4CAF50;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <a href="{{ url_for('index') }}" style="text-decoration: none;"><div class="logo">The Newel</div></a>
+        <div class="nav-links">
+            <a href="{{ url_for('student_dashboard') }}">Dashboard</a>
+            <a href="{{ url_for('logout') }}">Logout</a>
+        </div>
+    </div>
+
+    <div class="flash-messages">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash-message {{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <div class="container">
+        <div class="page-header">
+            <h1 class="page-title">Biology Prompts for {{ session.class }}</h1>
+        </div>
+
+        {% if prompts %}
+        <div class="prompts-grid">
+            {% for prompt in prompts %}
+            <div class="prompt-card">
+                <h3 class="prompt-title">{{ prompt.title }}</h3>
+                <p class="prompt-description">{{ prompt.description[:150] }}{% if prompt.description|length > 150 %}...{% endif %}</p>
+                
+                <div class="prompt-meta">
+                    <span>Assigned on {{ prompt.created_at[:10] }}</span>
+                </div>
+                
+                <div class="prompt-actions">
+                    <a href="{{ url_for('view_student_biology_prompt', prompt_id=prompt.id) }}" class="btn btn-view">View Prompt</a>
+                    {% if prompt.submitted %}
+                        <span class="btn btn-submitted">Submitted</span>
+                    {% else %}
+                        <a href="{{ url_for('submit_biology_response', prompt_id=prompt.id) }}" class="btn btn-submit">Submit Response</a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-state-icon">🧬</div>
+            <h2>No Biology Prompts Assigned</h2>
+            <p>There are no biology prompts assigned to your class yet.</p>
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>
